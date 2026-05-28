@@ -1,8 +1,11 @@
 # EPANET MCP Server
 
+[![Linter](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/linter.yml/badge.svg?branch=main)](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/linter.yml)
+[![Pytest](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/test.yml)
+
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that
 exposes EPANET water-distribution network modelling capabilities through
-[ePyT](https://github.com/KIOS-Research/EPyT) — the EPANET Python Toolkit.
+[ePyT](https://github.com/KIOS-Research/EPyT) - the EPANET Python Toolkit.
 
 Any MCP-compatible LLM can load water network models, run
 simulations, modify parameters, and generate complex what-if scenarios through
