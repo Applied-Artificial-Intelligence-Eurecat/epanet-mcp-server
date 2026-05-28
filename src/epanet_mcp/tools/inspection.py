@@ -12,10 +12,10 @@ from epyt import epanet
 from epanet_mcp.session import NetworkSession, registry
 from epanet_mcp.utils import safe_list, to_python, resolve_network_path
 
-
 # ---------------------------------------------------------------------------
 # Load / unload
 # ---------------------------------------------------------------------------
+
 
 def load_network(path: str, network_id: Optional[str] = None) -> Dict[str, Any]:
     """
@@ -76,6 +76,7 @@ def list_networks() -> Dict[str, Any]:
 def list_bundled_networks() -> Dict[str, Any]:
     """List every .inp file bundled with ePyT (available for ``load_network``)."""
     import epyt
+
     networks_dir = os.path.join(os.path.dirname(epyt.__file__), "networks")
     results = []
     for root, _dirs, files in os.walk(networks_dir):
@@ -88,6 +89,7 @@ def list_bundled_networks() -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Inspection
 # ---------------------------------------------------------------------------
+
 
 def get_network_summary(network_id: str) -> Dict[str, Any]:
     """
@@ -196,10 +198,12 @@ def get_controls(network_id: str) -> Dict[str, Any]:
     controls = []
     for i in range(1, count + 1):
         ctrl = d.getControls(i)
-        controls.append({
-            "index": i,
-            "control": ctrl.Control if hasattr(ctrl, "Control") else str(ctrl),
-        })
+        controls.append(
+            {
+                "index": i,
+                "control": ctrl.Control if hasattr(ctrl, "Control") else str(ctrl),
+            }
+        )
     return {"controls": controls}
 
 
@@ -215,13 +219,15 @@ def get_curves(network_id: str) -> Dict[str, Any]:
     curve_x = info.CurveXvalue
     curve_y = info.CurveYvalue
     for i, cid in enumerate(curve_ids):
-        curves.append({
-            "id": cid,
-            "index": i + 1,
-            "type": curve_types[i] if i < len(curve_types) else None,
-            "x_values": safe_list(curve_x[i]) if i < len(curve_x) else [],
-            "y_values": safe_list(curve_y[i]) if i < len(curve_y) else [],
-        })
+        curves.append(
+            {
+                "id": cid,
+                "index": i + 1,
+                "type": curve_types[i] if i < len(curve_types) else None,
+                "x_values": safe_list(curve_x[i]) if i < len(curve_x) else [],
+                "y_values": safe_list(curve_y[i]) if i < len(curve_y) else [],
+            }
+        )
     return {"curves": curves}
 
 
@@ -245,6 +251,7 @@ def get_options(network_id: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Private helpers
 # ---------------------------------------------------------------------------
+
 
 def _network_summary(d: epanet) -> Dict[str, Any]:
     counts = d.getCounts()

@@ -24,10 +24,10 @@ from epanet_mcp.session import NetworkSession, registry
 from epanet_mcp.tools.simulation import run_full_simulation
 from epanet_mcp.utils import safe_list, to_python
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _clone_session(source_id: str, new_id: str) -> NetworkSession:
     """
@@ -55,6 +55,7 @@ def _maybe_run(network_id: str, run_simulation: bool) -> Optional[Dict[str, Any]
 # ---------------------------------------------------------------------------
 # Demand perturbation
 # ---------------------------------------------------------------------------
+
 
 def create_demand_perturbation(
     network_id: str,
@@ -108,6 +109,7 @@ def create_demand_perturbation(
 # ---------------------------------------------------------------------------
 # Leakage events
 # ---------------------------------------------------------------------------
+
 
 def create_leakage_event(
     network_id: str,
@@ -175,8 +177,12 @@ def create_leakage_event(
     # Add two new pipes
     p1_id = f"{pipe_id}_A"
     p2_id = f"{pipe_id}_B"
-    d.addLinkPipe(p1_id, from_node, mid_node_id, half_length, orig_diameter, orig_roughness)
-    d.addLinkPipe(p2_id, mid_node_id, to_node, half_length, orig_diameter, orig_roughness)
+    d.addLinkPipe(
+        p1_id, from_node, mid_node_id, half_length, orig_diameter, orig_roughness
+    )
+    d.addLinkPipe(
+        p2_id, mid_node_id, to_node, half_length, orig_diameter, orig_roughness
+    )
 
     # Delete original pipe
     d.deleteLink(pipe_idx)
@@ -199,6 +205,7 @@ def create_leakage_event(
 # ---------------------------------------------------------------------------
 # Contamination events
 # ---------------------------------------------------------------------------
+
 
 def create_contamination_event(
     network_id: str,
@@ -264,9 +271,9 @@ def create_contamination_event(
         d.setPattern(pidx, pattern_values)
 
     pat_idx = d.getPatternIndex(pat_id)
-    d.setNodeSourceQuality(node_idx, concentration)   # (nodeIndex, value)
-    d.setNodeSourceType(node_idx, source_type)        # (nodeIndex, typeString)
-    d.setNodeSourcePatternIndex(node_idx, pat_idx)    # (nodeIndex, patternIndex)
+    d.setNodeSourceQuality(node_idx, concentration)  # (nodeIndex, value)
+    d.setNodeSourceType(node_idx, source_type)  # (nodeIndex, typeString)
+    d.setNodeSourcePatternIndex(node_idx, pat_idx)  # (nodeIndex, patternIndex)
 
     result: Dict[str, Any] = {
         "scenario_type": "contamination_event",
@@ -287,6 +294,7 @@ def create_contamination_event(
 # ---------------------------------------------------------------------------
 # Pressure change scenario
 # ---------------------------------------------------------------------------
+
 
 def create_pressure_change_scenario(
     network_id: str,
@@ -334,6 +342,7 @@ def create_pressure_change_scenario(
 # Pump control scenario
 # ---------------------------------------------------------------------------
 
+
 def create_pump_control_scenario(
     network_id: str,
     pump_schedule: Dict[str, List[Dict[str, Any]]],
@@ -373,7 +382,9 @@ def create_pump_control_scenario(
         added_controls[pump_id] = []
         for ctrl_str in controls:
             idx = d.addControls(ctrl_str)
-            added_controls[pump_id].append({"control": ctrl_str, "index": to_python(idx)})
+            added_controls[pump_id].append(
+                {"control": ctrl_str, "index": to_python(idx)}
+            )
 
     result: Dict[str, Any] = {
         "scenario_type": "pump_control",
@@ -389,6 +400,7 @@ def create_pump_control_scenario(
 # ---------------------------------------------------------------------------
 # Valve control scenario
 # ---------------------------------------------------------------------------
+
 
 def create_valve_control_scenario(
     network_id: str,
@@ -436,6 +448,7 @@ def create_valve_control_scenario(
 # Multiple-failure scenario
 # ---------------------------------------------------------------------------
 
+
 def create_multi_failure_scenario(
     network_id: str,
     failed_pipes: Optional[List[str]] = None,
@@ -464,11 +477,11 @@ def create_multi_failure_scenario(
     d = sess.d
 
     closed: Dict[str, list] = {"pipes": [], "pumps": []}
-    for pid in (failed_pipes or []):
+    for pid in failed_pipes or []:
         idx = d.getLinkIndex(pid)
         d.setLinkInitialStatus(idx, 0)
         closed["pipes"].append(pid)
-    for pid in (failed_pumps or []):
+    for pid in failed_pumps or []:
         idx = d.getLinkIndex(pid)
         d.setLinkInitialStatus(idx, 0)
         closed["pumps"].append(pid)

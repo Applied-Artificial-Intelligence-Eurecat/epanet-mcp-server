@@ -12,10 +12,10 @@ from typing import Any, Dict, List, Optional
 from epanet_mcp.session import registry
 from epanet_mcp.utils import safe_list, to_python
 
-
 # ---------------------------------------------------------------------------
 # Persistence
 # ---------------------------------------------------------------------------
+
 
 def save_network(network_id: str, output_path: str) -> Dict[str, Any]:
     """
@@ -36,6 +36,7 @@ def save_network(network_id: str, output_path: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Demand modifications
 # ---------------------------------------------------------------------------
+
 
 def set_node_base_demand(
     network_id: str,
@@ -108,12 +109,17 @@ def add_pattern(
     sess = registry.require(network_id)
     d = sess.d
     idx = d.addPattern(pattern_id, values)
-    return {"network_id": network_id, "pattern_id": pattern_id, "pattern_index": to_python(idx)}
+    return {
+        "network_id": network_id,
+        "pattern_id": pattern_id,
+        "pattern_index": to_python(idx),
+    }
 
 
 # ---------------------------------------------------------------------------
 # Pipe modifications
 # ---------------------------------------------------------------------------
+
 
 def set_pipe_diameter(
     network_id: str,
@@ -216,6 +222,7 @@ def set_pipe_length(
 # ---------------------------------------------------------------------------
 # Pump modifications
 # ---------------------------------------------------------------------------
+
 
 def set_pump_status(
     network_id: str,
@@ -327,6 +334,7 @@ def set_pump_head_curve(
 # Valve modifications
 # ---------------------------------------------------------------------------
 
+
 def set_valve_setting(
     network_id: str,
     valve_id: str,
@@ -380,6 +388,7 @@ def set_valve_status(
 # ---------------------------------------------------------------------------
 # Tank modifications
 # ---------------------------------------------------------------------------
+
 
 def set_tank_parameters(
     network_id: str,
@@ -443,6 +452,7 @@ def set_tank_parameters(
 # Reservoir modifications
 # ---------------------------------------------------------------------------
 
+
 def set_reservoir_head(
     network_id: str,
     reservoir_id: str,
@@ -470,6 +480,7 @@ def set_reservoir_head(
 # ---------------------------------------------------------------------------
 # Simulation time / option modifications
 # ---------------------------------------------------------------------------
+
 
 def set_simulation_duration(
     network_id: str,
@@ -578,6 +589,7 @@ def set_quality_type(
 # Control modifications
 # ---------------------------------------------------------------------------
 
+
 def add_control(
     network_id: str,
     control_string: str,
@@ -597,7 +609,11 @@ def add_control(
     """
     sess = registry.require(network_id)
     idx = sess.d.addControls(control_string)
-    return {"network_id": network_id, "control_string": control_string, "control_index": to_python(idx)}
+    return {
+        "network_id": network_id,
+        "control_string": control_string,
+        "control_index": to_python(idx),
+    }
 
 
 def delete_control(

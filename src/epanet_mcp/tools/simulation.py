@@ -9,10 +9,10 @@ from typing import Any, Dict, List, Optional
 from epanet_mcp.session import registry
 from epanet_mcp.utils import safe_list, to_python
 
-
 # ---------------------------------------------------------------------------
 # Full time-series simulations
 # ---------------------------------------------------------------------------
+
 
 def run_hydraulic_simulation(network_id: str) -> Dict[str, Any]:
     """
@@ -128,6 +128,7 @@ def run_full_simulation(network_id: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Step-by-step / single snapshot
 # ---------------------------------------------------------------------------
+
 
 def get_pressure_at_time(
     network_id: str,

@@ -281,7 +281,9 @@ def set_node_base_demand(
         demand: New base demand in the network's flow units.
         demand_category: Demand category index (default 1).
     """
-    return modification.set_node_base_demand(network_id, node_id, demand, demand_category)
+    return modification.set_node_base_demand(
+        network_id, node_id, demand, demand_category
+    )
 
 
 @mcp.tool()
@@ -436,7 +438,9 @@ def set_pump_head_curve(
         flow_values: X-axis (flow) values.
         head_values: Y-axis (head) values.
     """
-    return modification.set_pump_head_curve(network_id, pump_id, flow_values, head_values)
+    return modification.set_pump_head_curve(
+        network_id, pump_id, flow_values, head_values
+    )
 
 
 @mcp.tool()

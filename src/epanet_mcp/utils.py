@@ -47,6 +47,7 @@ def resolve_network_path(path: str) -> str:
         return os.path.abspath(path)
     # try ePyT bundled networks
     import epyt
+
     networks_dir = os.path.join(os.path.dirname(epyt.__file__), "networks")
     # search recursively
     for root, _dirs, files in os.walk(networks_dir):

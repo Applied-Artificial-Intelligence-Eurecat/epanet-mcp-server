@@ -4,7 +4,6 @@ import pytest
 from epanet_mcp.session import registry
 from epanet_mcp.tools import inspection
 
-
 NET1_NAME = "Net1.inp"
 NET1_ID = "net1_test"
 

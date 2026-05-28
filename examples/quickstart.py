@@ -69,8 +69,10 @@ dem_result = scenarios.create_demand_perturbation(
     scenario_id="high_demand",
     run_simulation=True,
 )
-p_high = {nid: dem_result["simulation"]["pressure"][-1][i]
-          for i, nid in enumerate(dem_result["simulation"]["node_ids"])}
+p_high = {
+    nid: dem_result["simulation"]["pressure"][-1][i]
+    for i, nid in enumerate(dem_result["simulation"]["node_ids"])
+}
 print("  Pressures at end of high-demand simulation:")
 for nid, p in sorted(p_high.items()):
     print(f"    {nid:8s}: {p:.2f}")
@@ -100,9 +102,7 @@ contam = scenarios.create_contamination_event(
     run_simulation=True,
 )
 print(f"  Pattern id: {contam['pattern_id']}")
-max_quality = max(
-    max(row) for row in contam["simulation"]["node_quality"] if row
-)
+max_quality = max(max(row) for row in contam["simulation"]["node_quality"] if row)
 print(f"  Max node quality reached: {max_quality:.4f} mg/L")
 
 print("\n=== Done ===")

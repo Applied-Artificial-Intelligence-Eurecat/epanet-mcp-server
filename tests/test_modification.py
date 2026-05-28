@@ -57,7 +57,9 @@ def test_set_pump_speed(net1):
 
 def test_set_tank_parameters(net1):
     # Tank "2" in Net1
-    result = modification.set_tank_parameters(net1, "2", initial_level=15.0, max_level=30.0)
+    result = modification.set_tank_parameters(
+        net1, "2", initial_level=15.0, max_level=30.0
+    )
     assert result["initial_level"] == 15.0
     assert result["max_level"] == 30.0
 
