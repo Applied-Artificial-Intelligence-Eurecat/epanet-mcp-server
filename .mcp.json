@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "epanet": {
+      "command": "python",
+      "args": ["-m", "epanet_mcp.server"],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      }
+    }
+  }
+}
