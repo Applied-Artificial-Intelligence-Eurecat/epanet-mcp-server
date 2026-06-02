@@ -121,7 +121,7 @@ Once the server is connected, you can ask things like:
 
 > **"Load Net1.inp and show me a summary of the network."**
 
-> **"Run a hydraulic simulation and tell me which node has the lowest pressure at hour 12."**
+> **"Run a full simulation and tell me which node has the lowest pressure at hour 12."**
 
 > **"Double the base demand at junction 11 and re-run the simulation. How does pressure change?"**
 
