@@ -4,10 +4,25 @@ Tools for running EPANET hydraulic and water-quality simulations.
 
 from __future__ import annotations
 
+import os
+import tempfile
+from contextlib import contextmanager
 from typing import Any, Dict, List, Optional
 
 from epanet_mcp.session import registry
 from epanet_mcp.utils import safe_list, to_python
+
+
+@contextmanager
+def _simulation_cwd():
+    """Temporarily switch CWD to a temp directory for EPyT's .bin files."""
+    old = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        try:
+            yield
+        finally:
+            os.chdir(old)
 
 # ---------------------------------------------------------------------------
 # Full time-series simulations
@@ -29,7 +44,8 @@ def run_hydraulic_simulation(network_id: str) -> Dict[str, Any]:
     sess = registry.require(network_id)
     d = sess.d
 
-    ts = d.getComputedHydraulicTimeSeries()
+    with _simulation_cwd():
+        ts = d.getComputedHydraulicTimeSeries()
 
     node_ids = safe_list(d.getNodeNameID())
     link_ids = safe_list(d.getLinkNameID())
@@ -67,7 +83,8 @@ def run_quality_simulation(network_id: str) -> Dict[str, Any]:
     sess = registry.require(network_id)
     d = sess.d
 
-    ts = d.getComputedQualityTimeSeries()
+    with _simulation_cwd():
+        ts = d.getComputedQualityTimeSeries()
 
     node_ids = safe_list(d.getNodeNameID())
     link_ids = safe_list(d.getLinkNameID())
@@ -99,7 +116,8 @@ def run_full_simulation(network_id: str) -> Dict[str, Any]:
     sess = registry.require(network_id)
     d = sess.d
 
-    ts = d.getComputedTimeSeries()
+    with _simulation_cwd():
+        ts = d.getComputedTimeSeries()
 
     node_ids = safe_list(d.getNodeNameID())
     link_ids = safe_list(d.getLinkNameID())
@@ -146,7 +164,8 @@ def get_pressure_at_time(
     """
     sess = registry.require(network_id)
     d = sess.d
-    ts = d.getComputedHydraulicTimeSeries()
+    with _simulation_cwd():
+        ts = d.getComputedHydraulicTimeSeries()
     times = safe_list(ts.Time)
     pressures = to_python(ts.Pressure)
     node_ids = safe_list(d.getNodeNameID())
@@ -180,7 +199,8 @@ def get_flow_at_time(
     """
     sess = registry.require(network_id)
     d = sess.d
-    ts = d.getComputedHydraulicTimeSeries()
+    with _simulation_cwd():
+        ts = d.getComputedHydraulicTimeSeries()
     times = safe_list(ts.Time)
     flows = to_python(ts.Flow)
     link_ids = safe_list(d.getLinkNameID())
