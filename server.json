@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server",
+  "title": "EPANET MCP Server",
+  "description": "MCP server for EPANET water-distribution network simulation and scenario analysis.",
+  "repository": {
+    "url": "https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server",
+    "source": "github"
+  },
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "epanet-mcp-server",
+      "version": "0.1.1",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

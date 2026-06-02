@@ -39,7 +39,7 @@ pip install epyt mcp
 ## Installation
 
 ```bash
-git clone https://github.com/oriolac/epanet-mcp-server.git
+git clone https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server.git
 cd epanet-mcp-server
 pip install -e .
 ```
@@ -175,3 +175,5 @@ them all.
 ## License
 
 MIT
+
+<!-- mcp-name: io.github.Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server -->
