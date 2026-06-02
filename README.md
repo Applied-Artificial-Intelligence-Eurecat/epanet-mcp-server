@@ -2,6 +2,8 @@
 
 [![Linter](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/linter.yml/badge.svg?branch=main)](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/linter.yml)
 [![Pytest](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/test.yml)
+[![PyPI version](https://img.shields.io/pypi/v/epanet-mcp-server.svg?label=PyPI)](https://pypi.org/project/epanet-mcp-server/)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-listed-blue.svg)](https://registry.modelcontextprotocol.io/?q=io.github.Applied-Artificial-Intelligence-Eurecat%2Fepanet-mcp-server)
 
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that
 exposes EPANET water-distribution network modelling capabilities through
