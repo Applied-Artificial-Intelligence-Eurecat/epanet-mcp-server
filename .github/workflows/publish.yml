@@ -24,11 +24,48 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Verify release versions
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import tomllib
+          from pathlib import Path
+
+          tag = os.environ["RELEASE_TAG"]
+          assert tag.startswith("v"), f"Invalid release tag: {tag}"
+          version = tag.removeprefix("v")
+
+          project = tomllib.loads(
+              Path("pyproject.toml").read_text()
+          )
+          server = json.loads(
+              Path("server.json").read_text()
+          )
+
+          assert project["project"]["version"] == version
+          assert server["version"] == version
+          assert all(
+              package["version"] == version
+              for package in server["packages"]
+          )
+
+          print(f"Versions match: {version}")
+          PY
+
       - name: Install build dependencies
         run: python -m pip install --upgrade pip build
 
       - name: Build package
         run: python -m build
+
+      - name: Install project and test dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run tests
+        run: python -m pytest tests/ -v
 
       - name: Upload distributions
         uses: actions/upload-artifact@v5
