@@ -4,26 +4,12 @@ Tools for running EPANET hydraulic and water-quality simulations.
 
 from __future__ import annotations
 
-import os
-import tempfile
-from contextlib import contextmanager
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
+from epanet_mcp.engine import runner
+from epanet_mcp.session import NetworkSession
 from epanet_mcp.session import registry
 from epanet_mcp.utils import safe_list, to_python
-
-
-@contextmanager
-def _simulation_cwd():
-    """Temporarily switch CWD to a temp directory for EPyT's .bin files."""
-    old = os.getcwd()
-    with tempfile.TemporaryDirectory() as td:
-        os.chdir(td)
-        try:
-            yield
-        finally:
-            os.chdir(old)
-
 
 # ---------------------------------------------------------------------------
 # Full time-series simulations
@@ -42,30 +28,31 @@ def run_hydraulic_simulation(network_id: str) -> Dict[str, Any]:
     network_id:
         Id of a previously loaded network (see ``load_network``).
     """
-    sess = registry.require(network_id)
-    d = sess.d
+    with registry.lease(network_id) as session:
+        return _run_hydraulic_session(session)
 
-    with _simulation_cwd():
+
+def _run_hydraulic_session(session: NetworkSession) -> Dict[str, Any]:
+    """Run hydraulics for an already leased session."""
+
+    def operation(d: Any) -> Dict[str, Any]:
         ts = d.getComputedHydraulicTimeSeries()
+        return {
+            "network_id": session.network_id,
+            "time_steps_s": safe_list(ts.Time),
+            "node_ids": safe_list(d.getNodeNameID()),
+            "link_ids": safe_list(d.getLinkNameID()),
+            "pressure": to_python(ts.Pressure),
+            "demand": to_python(ts.Demand),
+            "head": to_python(ts.Head),
+            "flow": to_python(ts.Flow),
+            "velocity": to_python(ts.Velocity),
+            "head_loss": to_python(ts.HeadLoss),
+            "status": to_python(ts.Status),
+            "setting": to_python(ts.Setting),
+        }
 
-    node_ids = safe_list(d.getNodeNameID())
-    link_ids = safe_list(d.getLinkNameID())
-    times = safe_list(ts.Time)
-
-    return {
-        "network_id": network_id,
-        "time_steps_s": times,
-        "node_ids": node_ids,
-        "link_ids": link_ids,
-        "pressure": to_python(ts.Pressure),
-        "demand": to_python(ts.Demand),
-        "head": to_python(ts.Head),
-        "flow": to_python(ts.Flow),
-        "velocity": to_python(ts.Velocity),
-        "head_loss": to_python(ts.HeadLoss),
-        "status": to_python(ts.Status),
-        "setting": to_python(ts.Setting),
-    }
+    return runner.run_on_snapshot(session, operation)
 
 
 def run_quality_simulation(network_id: str) -> Dict[str, Any]:
@@ -81,25 +68,26 @@ def run_quality_simulation(network_id: str) -> Dict[str, Any]:
     network_id:
         Id of a previously loaded network.
     """
-    sess = registry.require(network_id)
-    d = sess.d
+    with registry.lease(network_id) as session:
+        return _run_quality_session(session)
 
-    with _simulation_cwd():
+
+def _run_quality_session(session: NetworkSession) -> Dict[str, Any]:
+    """Run water quality for an already leased session."""
+
+    def operation(d: Any) -> Dict[str, Any]:
         ts = d.getComputedQualityTimeSeries()
+        return {
+            "network_id": session.network_id,
+            "time_steps_s": safe_list(ts.Time),
+            "node_ids": safe_list(d.getNodeNameID()),
+            "link_ids": safe_list(d.getLinkNameID()),
+            "node_quality": to_python(ts.NodeQuality),
+            "link_quality": to_python(ts.LinkQuality),
+            "mass_flow_rate": to_python(ts.MassFlowRate),
+        }
 
-    node_ids = safe_list(d.getNodeNameID())
-    link_ids = safe_list(d.getLinkNameID())
-    times = safe_list(ts.Time)
-
-    return {
-        "network_id": network_id,
-        "time_steps_s": times,
-        "node_ids": node_ids,
-        "link_ids": link_ids,
-        "node_quality": to_python(ts.NodeQuality),
-        "link_quality": to_python(ts.LinkQuality),
-        "mass_flow_rate": to_python(ts.MassFlowRate),
-    }
+    return runner.run_on_snapshot(session, operation)
 
 
 def run_full_simulation(network_id: str) -> Dict[str, Any]:
@@ -114,34 +102,35 @@ def run_full_simulation(network_id: str) -> Dict[str, Any]:
     network_id:
         Id of a previously loaded network.
     """
-    sess = registry.require(network_id)
-    d = sess.d
+    with registry.lease(network_id) as session:
+        return _run_full_session(session)
 
-    with _simulation_cwd():
+
+def _run_full_session(session: NetworkSession) -> Dict[str, Any]:
+    """Run hydraulics and quality for an already leased session."""
+
+    def operation(d: Any) -> Dict[str, Any]:
         ts = d.getComputedTimeSeries()
+        return {
+            "network_id": session.network_id,
+            "time_steps_s": safe_list(ts.Time),
+            "node_ids": safe_list(d.getNodeNameID()),
+            "link_ids": safe_list(d.getLinkNameID()),
+            "pressure": to_python(ts.Pressure),
+            "demand": to_python(ts.Demand),
+            "head": to_python(ts.Head),
+            "node_quality": to_python(ts.NodeQuality),
+            "flow": to_python(ts.Flow),
+            "velocity": to_python(ts.Velocity),
+            "head_loss": to_python(ts.HeadLoss),
+            "link_quality": to_python(ts.LinkQuality),
+            "status": to_python(ts.Status),
+            "setting": to_python(ts.Setting),
+            "reaction_rate": to_python(ts.ReactionRate),
+            "friction_factor": to_python(ts.FrictionFactor),
+        }
 
-    node_ids = safe_list(d.getNodeNameID())
-    link_ids = safe_list(d.getLinkNameID())
-    times = safe_list(ts.Time)
-
-    return {
-        "network_id": network_id,
-        "time_steps_s": times,
-        "node_ids": node_ids,
-        "link_ids": link_ids,
-        "pressure": to_python(ts.Pressure),
-        "demand": to_python(ts.Demand),
-        "head": to_python(ts.Head),
-        "node_quality": to_python(ts.NodeQuality),
-        "flow": to_python(ts.Flow),
-        "velocity": to_python(ts.Velocity),
-        "head_loss": to_python(ts.HeadLoss),
-        "link_quality": to_python(ts.LinkQuality),
-        "status": to_python(ts.Status),
-        "setting": to_python(ts.Setting),
-        "reaction_rate": to_python(ts.ReactionRate),
-        "friction_factor": to_python(ts.FrictionFactor),
-    }
+    return runner.run_on_snapshot(session, operation)
 
 
 # ---------------------------------------------------------------------------
@@ -163,25 +152,21 @@ def get_pressure_at_time(
     time_s:
         Simulation time in seconds.
     """
-    sess = registry.require(network_id)
-    d = sess.d
-    with _simulation_cwd():
-        ts = d.getComputedHydraulicTimeSeries()
-    times = safe_list(ts.Time)
-    pressures = to_python(ts.Pressure)
-    node_ids = safe_list(d.getNodeNameID())
-
-    # find closest timestep index
-    closest_idx = min(range(len(times)), key=lambda i: abs(times[i] - time_s))
-    actual_time = times[closest_idx]
-
-    row = pressures[closest_idx] if pressures else []
-    return {
-        "network_id": network_id,
-        "requested_time_s": time_s,
-        "actual_time_s": actual_time,
-        "pressures": {nid: row[i] for i, nid in enumerate(node_ids) if i < len(row)},
-    }
+    with registry.lease(network_id) as session:
+        result = _run_hydraulic_session(session)
+        times = result["time_steps_s"]
+        pressures = result["pressure"]
+        node_ids = result["node_ids"]
+        closest_idx = min(range(len(times)), key=lambda i: abs(times[i] - time_s))
+        row = pressures[closest_idx] if pressures else []
+        return {
+            "network_id": network_id,
+            "requested_time_s": time_s,
+            "actual_time_s": times[closest_idx],
+            "pressures": {
+                node_id: row[i] for i, node_id in enumerate(node_ids) if i < len(row)
+            },
+        }
 
 
 def get_flow_at_time(
@@ -198,21 +183,18 @@ def get_flow_at_time(
     time_s:
         Simulation time in seconds.
     """
-    sess = registry.require(network_id)
-    d = sess.d
-    with _simulation_cwd():
-        ts = d.getComputedHydraulicTimeSeries()
-    times = safe_list(ts.Time)
-    flows = to_python(ts.Flow)
-    link_ids = safe_list(d.getLinkNameID())
-
-    closest_idx = min(range(len(times)), key=lambda i: abs(times[i] - time_s))
-    actual_time = times[closest_idx]
-
-    row = flows[closest_idx] if flows else []
-    return {
-        "network_id": network_id,
-        "requested_time_s": time_s,
-        "actual_time_s": actual_time,
-        "flows": {lid: row[i] for i, lid in enumerate(link_ids) if i < len(row)},
-    }
+    with registry.lease(network_id) as session:
+        result = _run_hydraulic_session(session)
+        times = result["time_steps_s"]
+        flows = result["flow"]
+        link_ids = result["link_ids"]
+        closest_idx = min(range(len(times)), key=lambda i: abs(times[i] - time_s))
+        row = flows[closest_idx] if flows else []
+        return {
+            "network_id": network_id,
+            "requested_time_s": time_s,
+            "actual_time_s": times[closest_idx],
+            "flows": {
+                link_id: row[i] for i, link_id in enumerate(link_ids) if i < len(row)
+            },
+        }

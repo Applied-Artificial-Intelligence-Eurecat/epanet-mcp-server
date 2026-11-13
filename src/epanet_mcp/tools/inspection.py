@@ -9,7 +9,7 @@ import os
 
 from epyt import epanet
 
-from epanet_mcp.session import NetworkSession, registry
+from epanet_mcp.session import NetworkSession, registry, session_operation
 from epanet_mcp.utils import safe_list, to_python, resolve_network_path
 
 # ---------------------------------------------------------------------------
@@ -39,20 +39,18 @@ def load_network(path: str, network_id: Optional[str] = None) -> Dict[str, Any]:
 
     nid = network_id or os.path.splitext(os.path.basename(resolved))[0]
 
-    # unload any existing session with the same id
-    registry.remove(nid)
-
     # ph=True enables the EPANET 2.2 project-handle API, which supports
     # multiple concurrent network instances in the same process.
     d = epanet(resolved, display_msg=False, ph=True)
     sess = NetworkSession(network_id=nid, path=resolved, d=d)
-    registry.add(sess)
-
-    return {
-        "network_id": nid,
-        "path": resolved,
-        "summary": _network_summary(d),
-    }
+    try:
+        summary = _network_summary(d)
+        registry.replace(sess)
+        return {"network_id": nid, "path": resolved, "summary": summary}
+    except Exception:
+        if registry.get(nid) is not sess:
+            sess.close()
+        raise
 
 
 def unload_network(network_id: str) -> Dict[str, Any]:
@@ -91,6 +89,7 @@ def list_bundled_networks() -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
+@session_operation
 def get_network_summary(network_id: str) -> Dict[str, Any]:
     """
     High-level summary: node/link counts, flow units, simulation options.
@@ -100,6 +99,7 @@ def get_network_summary(network_id: str) -> Dict[str, Any]:
     return _network_summary(d)
 
 
+@session_operation
 def get_nodes(network_id: str) -> Dict[str, Any]:
     """
     Return all nodes (junctions, tanks, reservoirs) with their attributes.
@@ -140,6 +140,7 @@ def get_nodes(network_id: str) -> Dict[str, Any]:
     return {"nodes": nodes}
 
 
+@session_operation
 def get_links(network_id: str) -> Dict[str, Any]:
     """
     Return all links (pipes, pumps, valves) with their attributes.
@@ -175,6 +176,7 @@ def get_links(network_id: str) -> Dict[str, Any]:
     return {"links": links}
 
 
+@session_operation
 def get_patterns(network_id: str) -> Dict[str, Any]:
     """Return all demand/time patterns defined in the network."""
     sess = registry.require(network_id)
@@ -190,6 +192,7 @@ def get_patterns(network_id: str) -> Dict[str, Any]:
     return {"patterns": patterns}
 
 
+@session_operation
 def get_controls(network_id: str) -> Dict[str, Any]:
     """Return all simple controls defined in the network."""
     sess = registry.require(network_id)
@@ -207,6 +210,7 @@ def get_controls(network_id: str) -> Dict[str, Any]:
     return {"controls": controls}
 
 
+@session_operation
 def get_curves(network_id: str) -> Dict[str, Any]:
     """Return all curves (pump head, efficiency, volume, etc.)."""
     sess = registry.require(network_id)
@@ -231,6 +235,7 @@ def get_curves(network_id: str) -> Dict[str, Any]:
     return {"curves": curves}
 
 
+@session_operation
 def get_options(network_id: str) -> Dict[str, Any]:
     """Return simulation options (timesteps, units, quality settings, etc.)."""
     sess = registry.require(network_id)

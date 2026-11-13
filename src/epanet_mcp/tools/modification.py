@@ -9,14 +9,33 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from epanet_mcp.session import registry
-from epanet_mcp.utils import safe_list, to_python
+from epanet_mcp.domain.validation import (
+    choice,
+    finite_number,
+    integer_value,
+    link_index,
+    node_index,
+    nonempty_string,
+    nonnegative_number,
+    numeric_sequence,
+    positive_number,
+    strictly_increasing,
+)
+from epanet_mcp.session import registry, session_operation
+from epanet_mcp.utils import to_python
+
+
+def _link_status(status: str) -> tuple[str, int]:
+    normalized = choice("status", status, ("OPEN", "CLOSED"))
+    return normalized, 1 if normalized == "OPEN" else 0
+
 
 # ---------------------------------------------------------------------------
 # Persistence
 # ---------------------------------------------------------------------------
 
 
+@session_operation
 def save_network(network_id: str, output_path: str) -> Dict[str, Any]:
     """
     Save the current (possibly modified) network to a new .inp file.
@@ -38,6 +57,7 @@ def save_network(network_id: str, output_path: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
+@session_operation
 def set_node_base_demand(
     network_id: str,
     node_id: str,
@@ -60,11 +80,27 @@ def set_node_base_demand(
     """
     sess = registry.require(network_id)
     d = sess.d
-    idx = d.getNodeIndex(node_id)
-    d.setNodeBaseDemands(idx, demand)
-    return {"network_id": network_id, "node_id": node_id, "base_demand": demand}
+    idx = node_index(d, node_id, kind="junction")
+    demand = finite_number("demand", demand)
+    demand_category = integer_value("demand_category", demand_category, minimum=1)
+    category_count = int(d.getNodeDemandCategoriesNumber(idx))
+    if demand_category > category_count:
+        raise ValueError(
+            f"Junction {node_id!r} has {category_count} demand categories; "
+            f"category {demand_category} does not exist."
+        )
+    old_demand = float(d.getNodeBaseDemands(idx)[demand_category][0])
+    d.setNodeBaseDemands(idx, demand_category, demand)
+    return {
+        "network_id": network_id,
+        "node_id": node_id,
+        "demand_category": demand_category,
+        "old_base_demand": old_demand,
+        "base_demand": demand,
+    }
 
 
+@session_operation
 def set_pattern(
     network_id: str,
     pattern_id: str,
@@ -84,11 +120,14 @@ def set_pattern(
     """
     sess = registry.require(network_id)
     d = sess.d
+    pattern_id = nonempty_string("pattern_id", pattern_id)
+    values = numeric_sequence("values", values, nonnegative=True)
     pidx = d.getPatternIndex(pattern_id)
     d.setPattern(pidx, values)
     return {"network_id": network_id, "pattern_id": pattern_id, "values": values}
 
 
+@session_operation
 def add_pattern(
     network_id: str,
     pattern_id: str,
@@ -108,6 +147,8 @@ def add_pattern(
     """
     sess = registry.require(network_id)
     d = sess.d
+    pattern_id = nonempty_string("pattern_id", pattern_id)
+    values = numeric_sequence("values", values, nonnegative=True)
     idx = d.addPattern(pattern_id, values)
     return {
         "network_id": network_id,
@@ -121,6 +162,7 @@ def add_pattern(
 # ---------------------------------------------------------------------------
 
 
+@session_operation
 def set_pipe_diameter(
     network_id: str,
     pipe_id: str,
@@ -140,11 +182,13 @@ def set_pipe_diameter(
     """
     sess = registry.require(network_id)
     d = sess.d
-    idx = d.getLinkIndex(pipe_id)
+    idx = link_index(d, pipe_id, kind="pipe")
+    diameter = positive_number("diameter", diameter)
     d.setLinkDiameter(idx, diameter)
     return {"network_id": network_id, "pipe_id": pipe_id, "diameter": diameter}
 
 
+@session_operation
 def set_pipe_roughness(
     network_id: str,
     pipe_id: str,
@@ -165,11 +209,13 @@ def set_pipe_roughness(
     """
     sess = registry.require(network_id)
     d = sess.d
-    idx = d.getLinkIndex(pipe_id)
+    idx = link_index(d, pipe_id, kind="pipe")
+    roughness = positive_number("roughness", roughness)
     d.setLinkRoughnessCoeff(idx, roughness)
     return {"network_id": network_id, "pipe_id": pipe_id, "roughness": roughness}
 
 
+@session_operation
 def set_pipe_status(
     network_id: str,
     pipe_id: str,
@@ -189,12 +235,13 @@ def set_pipe_status(
     """
     sess = registry.require(network_id)
     d = sess.d
-    idx = d.getLinkIndex(pipe_id)
-    status_code = 1 if status.upper() == "OPEN" else 0
+    idx = link_index(d, pipe_id, kind="pipe")
+    status, status_code = _link_status(status)
     d.setLinkInitialStatus(idx, status_code)
-    return {"network_id": network_id, "pipe_id": pipe_id, "status": status.upper()}
+    return {"network_id": network_id, "pipe_id": pipe_id, "status": status}
 
 
+@session_operation
 def set_pipe_length(
     network_id: str,
     pipe_id: str,
@@ -214,7 +261,8 @@ def set_pipe_length(
     """
     sess = registry.require(network_id)
     d = sess.d
-    idx = d.getLinkIndex(pipe_id)
+    idx = link_index(d, pipe_id, kind="pipe")
+    length = positive_number("length", length)
     d.setLinkLength(idx, length)
     return {"network_id": network_id, "pipe_id": pipe_id, "length": length}
 
@@ -224,6 +272,7 @@ def set_pipe_length(
 # ---------------------------------------------------------------------------
 
 
+@session_operation
 def set_pump_status(
     network_id: str,
     pump_id: str,
@@ -243,12 +292,13 @@ def set_pump_status(
     """
     sess = registry.require(network_id)
     d = sess.d
-    idx = d.getLinkIndex(pump_id)
-    status_code = 1 if status.upper() == "OPEN" else 0
+    idx = link_index(d, pump_id, kind="pump")
+    status, status_code = _link_status(status)
     d.setLinkInitialStatus(idx, status_code)
-    return {"network_id": network_id, "pump_id": pump_id, "status": status.upper()}
+    return {"network_id": network_id, "pump_id": pump_id, "status": status}
 
 
+@session_operation
 def set_pump_speed(
     network_id: str,
     pump_id: str,
@@ -268,11 +318,13 @@ def set_pump_speed(
     """
     sess = registry.require(network_id)
     d = sess.d
-    idx = d.getLinkIndex(pump_id)
+    idx = link_index(d, pump_id, kind="pump")
+    speed = nonnegative_number("speed", speed)
     d.setLinkInitialSetting(idx, speed)
     return {"network_id": network_id, "pump_id": pump_id, "speed": speed}
 
 
+@session_operation
 def set_pump_head_curve(
     network_id: str,
     pump_id: str,
@@ -298,7 +350,12 @@ def set_pump_head_curve(
     """
     sess = registry.require(network_id)
     d = sess.d
-    link_idx = d.getLinkIndex(pump_id)
+    link_idx = link_index(d, pump_id, kind="pump")
+    flow_values = numeric_sequence("flow_values", flow_values, nonnegative=True)
+    head_values = numeric_sequence("head_values", head_values, nonnegative=True)
+    if len(flow_values) != len(head_values):
+        raise ValueError("flow_values and head_values must have the same length.")
+    strictly_increasing("flow_values", flow_values)
 
     # getLinkPumpHeadCurveIndex() returns [pumpLinkIdx, curveIdx] pairs
     hc_pairs = d.getLinkPumpHeadCurveIndex()
@@ -335,6 +392,7 @@ def set_pump_head_curve(
 # ---------------------------------------------------------------------------
 
 
+@session_operation
 def set_valve_setting(
     network_id: str,
     valve_id: str,
@@ -355,11 +413,13 @@ def set_valve_setting(
     """
     sess = registry.require(network_id)
     d = sess.d
-    idx = d.getLinkIndex(valve_id)
+    idx = link_index(d, valve_id, kind="valve")
+    setting = finite_number("setting", setting)
     d.setLinkInitialSetting(idx, setting)
     return {"network_id": network_id, "valve_id": valve_id, "setting": setting}
 
 
+@session_operation
 def set_valve_status(
     network_id: str,
     valve_id: str,
@@ -379,10 +439,10 @@ def set_valve_status(
     """
     sess = registry.require(network_id)
     d = sess.d
-    idx = d.getLinkIndex(valve_id)
-    status_code = 1 if status.upper() == "OPEN" else 0
+    idx = link_index(d, valve_id, kind="valve")
+    status, status_code = _link_status(status)
     d.setLinkInitialStatus(idx, status_code)
-    return {"network_id": network_id, "valve_id": valve_id, "status": status.upper()}
+    return {"network_id": network_id, "valve_id": valve_id, "status": status}
 
 
 # ---------------------------------------------------------------------------
@@ -390,6 +450,7 @@ def set_valve_status(
 # ---------------------------------------------------------------------------
 
 
+@session_operation
 def set_tank_parameters(
     network_id: str,
     tank_id: str,
@@ -422,19 +483,42 @@ def set_tank_parameters(
     sess = registry.require(network_id)
     d = sess.d
 
-    # Tank setters use 1-based index within the tank list (not global node index)
+    node_index(d, tank_id, kind="tank")
     tank_names = list(d.getNodeTankNameID())
-    if tank_id not in tank_names:
-        raise ValueError(f"No tank found with id={tank_id!r}. Tanks: {tank_names}")
-    tank_idx = tank_names.index(tank_id) + 1  # 1-based
+    tank_idx = tank_names.index(tank_id) + 1
+    current_initial = float(to_python(d.getNodeTankInitialLevel(tank_idx)))
+    current_min = float(to_python(d.getNodeTankMinimumWaterLevel(tank_idx)))
+    current_max = float(to_python(d.getNodeTankMaximumWaterLevel(tank_idx)))
 
-    # Apply changes in safe order: expand range before setting level
+    if initial_level is not None:
+        initial_level = nonnegative_number("initial_level", initial_level)
     if min_level is not None:
-        d.setNodeTankMinimumWaterLevel(tank_idx, min_level)
+        min_level = nonnegative_number("min_level", min_level)
     if max_level is not None:
+        max_level = nonnegative_number("max_level", max_level)
+    if diameter is not None:
+        diameter = positive_number("diameter", diameter)
+    effective_initial = initial_level if initial_level is not None else current_initial
+    effective_min = min_level if min_level is not None else current_min
+    effective_max = max_level if max_level is not None else current_max
+    if effective_min > effective_max:
+        raise ValueError("min_level must be less than or equal to max_level.")
+    if effective_initial < effective_min:
+        raise ValueError("initial_level must be greater than or equal to min_level.")
+    if effective_initial > effective_max:
+        raise ValueError("initial_level must be less than or equal to max_level.")
+
+    # Expand limits first, set the level, then safely shrink limits.
+    if min_level is not None and min_level < current_min:
+        d.setNodeTankMinimumWaterLevel(tank_idx, min_level)
+    if max_level is not None and max_level > current_max:
         d.setNodeTankMaximumWaterLevel(tank_idx, max_level)
     if initial_level is not None:
         d.setNodeTankInitialLevel(tank_idx, initial_level)
+    if min_level is not None and min_level >= current_min:
+        d.setNodeTankMinimumWaterLevel(tank_idx, min_level)
+    if max_level is not None and max_level <= current_max:
+        d.setNodeTankMaximumWaterLevel(tank_idx, max_level)
     if diameter is not None:
         d.setNodeTankDiameter(tank_idx, diameter)
 
@@ -453,6 +537,7 @@ def set_tank_parameters(
 # ---------------------------------------------------------------------------
 
 
+@session_operation
 def set_reservoir_head(
     network_id: str,
     reservoir_id: str,
@@ -472,7 +557,8 @@ def set_reservoir_head(
     """
     sess = registry.require(network_id)
     d = sess.d
-    idx = d.getNodeIndex(reservoir_id)
+    idx = node_index(d, reservoir_id, kind="reservoir")
+    head = finite_number("head", head)
     d.setNodeElevations(idx, head)
     return {"network_id": network_id, "reservoir_id": reservoir_id, "head": head}
 
@@ -482,6 +568,7 @@ def set_reservoir_head(
 # ---------------------------------------------------------------------------
 
 
+@session_operation
 def set_simulation_duration(
     network_id: str,
     duration_s: int,
@@ -497,10 +584,12 @@ def set_simulation_duration(
         Simulation duration in seconds (e.g. 86400 = 24 hours).
     """
     sess = registry.require(network_id)
+    duration_s = integer_value("duration_s", duration_s)
     sess.d.setTimeSimulationDuration(duration_s)
     return {"network_id": network_id, "simulation_duration_s": duration_s}
 
 
+@session_operation
 def set_hydraulic_timestep(
     network_id: str,
     timestep_s: int,
@@ -516,10 +605,24 @@ def set_hydraulic_timestep(
         Hydraulic time step in seconds.
     """
     sess = registry.require(network_id)
+    timestep_s = integer_value("timestep_s", timestep_s, minimum=1)
     sess.d.setTimeHydraulicStep(timestep_s)
     return {"network_id": network_id, "hydraulic_timestep_s": timestep_s}
 
 
+@session_operation
+def set_pattern_timestep(
+    network_id: str,
+    timestep_s: int,
+) -> Dict[str, Any]:
+    """Set the timestep used by demand and quality-source patterns."""
+    sess = registry.require(network_id)
+    timestep_s = integer_value("timestep_s", timestep_s, minimum=1)
+    sess.d.setTimePatternStep(timestep_s)
+    return {"network_id": network_id, "pattern_timestep_s": timestep_s}
+
+
+@session_operation
 def set_quality_timestep(
     network_id: str,
     timestep_s: int,
@@ -535,10 +638,12 @@ def set_quality_timestep(
         Quality time step in seconds.
     """
     sess = registry.require(network_id)
+    timestep_s = integer_value("timestep_s", timestep_s, minimum=1)
     sess.d.setTimeQualityStep(timestep_s)
     return {"network_id": network_id, "quality_timestep_s": timestep_s}
 
 
+@session_operation
 def set_quality_type(
     network_id: str,
     quality_type: str,
@@ -566,7 +671,17 @@ def set_quality_type(
     sess = registry.require(network_id)
     d = sess.d
 
-    qt = quality_type.upper()
+    qt = choice("quality_type", quality_type, ("NONE", "AGE", "TRACE", "CHEM"))
+    if qt == "TRACE":
+        if tracer_node is None:
+            raise ValueError("tracer_node is required when quality_type='TRACE'.")
+        node_index(d, tracer_node)
+    elif tracer_node is not None:
+        raise ValueError("tracer_node is only valid when quality_type='TRACE'.")
+    if chemical_name is not None:
+        chemical_name = nonempty_string("chemical_name", chemical_name)
+    if units is not None:
+        units = nonempty_string("units", units)
     args: list = [qt]
     if qt == "TRACE" and tracer_node:
         args.append(tracer_node)
@@ -590,6 +705,7 @@ def set_quality_type(
 # ---------------------------------------------------------------------------
 
 
+@session_operation
 def add_control(
     network_id: str,
     control_string: str,
@@ -608,6 +724,7 @@ def add_control(
         ``"LINK P1 1.5 AT TIME 16:00"``
     """
     sess = registry.require(network_id)
+    control_string = nonempty_string("control_string", control_string)
     idx = sess.d.addControls(control_string)
     return {
         "network_id": network_id,
@@ -616,6 +733,7 @@ def add_control(
     }
 
 
+@session_operation
 def delete_control(
     network_id: str,
     control_index: int,
@@ -631,5 +749,6 @@ def delete_control(
         The 1-based control index (use ``get_controls`` to list them).
     """
     sess = registry.require(network_id)
+    control_index = integer_value("control_index", control_index, minimum=1)
     sess.d.deleteControls(control_index)
     return {"network_id": network_id, "deleted_control_index": control_index}

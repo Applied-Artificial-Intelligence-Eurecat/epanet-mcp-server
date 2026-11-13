@@ -18,7 +18,6 @@ Start with SSE transport (for HTTP clients):
 
 from __future__ import annotations
 
-import sys
 from typing import Any, Dict, List, Optional
 
 from mcp.server.fastmcp import FastMCP
@@ -548,6 +547,12 @@ def set_hydraulic_timestep(network_id: str, timestep_s: int) -> Dict[str, Any]:
 
 
 @mcp.tool()
+def set_pattern_timestep(network_id: str, timestep_s: int) -> Dict[str, Any]:
+    """Set the demand and quality-source pattern timestep in seconds."""
+    return modification.set_pattern_timestep(network_id, timestep_s)
+
+
+@mcp.tool()
 def set_quality_timestep(network_id: str, timestep_s: int) -> Dict[str, Any]:
     """
     Set the water-quality simulation time step.
@@ -646,9 +651,12 @@ def create_demand_perturbation(
 def create_leakage_event(
     network_id: str,
     pipe_id: str,
-    leak_fraction: float,
+    leak_fraction: Optional[float] = None,
     scenario_id: Optional[str] = None,
     run_simulation: bool = True,
+    target_leak_flow: Optional[float] = None,
+    reference_pressure: Optional[float] = None,
+    emitter_exponent: Optional[float] = None,
 ) -> Dict[str, Any]:
     """
     Simulate a pipe burst by adding a leakage emitter at the pipe midpoint.
@@ -660,12 +668,22 @@ def create_leakage_event(
     Args:
         network_id: Source network id.
         pipe_id: Id of the pipe that bursts.
-        leak_fraction: Fraction of flow that leaks (0.0–1.0).
+        leak_fraction: Optional fraction of baseline mean pipe flow (0.0–1.0).
         scenario_id: Id for the cloned scenario session.
         run_simulation: Run a full simulation after applying changes.
+        target_leak_flow: Optional target flow in the model's flow units.
+        reference_pressure: Pressure at which the target flow applies.
+        emitter_exponent: Pressure exponent; defaults to the model option.
     """
     return scenarios.create_leakage_event(
-        network_id, pipe_id, leak_fraction, scenario_id, run_simulation
+        network_id,
+        pipe_id,
+        leak_fraction,
+        scenario_id,
+        run_simulation,
+        target_leak_flow,
+        reference_pressure,
+        emitter_exponent,
     )
 
 
@@ -679,6 +697,8 @@ def create_contamination_event(
     source_type: str = "CONCEN",
     scenario_id: Optional[str] = None,
     run_simulation: bool = True,
+    chemical_name: str = "Contaminant",
+    units: str = "mg/L",
 ) -> Dict[str, Any]:
     """
     Inject a contaminant at a node for a specified time window and simulate.
@@ -696,6 +716,8 @@ def create_contamination_event(
                      ``"SETPOINT"``.
         scenario_id: Id for the cloned scenario session.
         run_simulation: Run a full simulation after applying changes.
+        chemical_name: Chemical species name.
+        units: Chemical quality units.
     """
     return scenarios.create_contamination_event(
         network_id,
@@ -706,6 +728,8 @@ def create_contamination_event(
         source_type,
         scenario_id,
         run_simulation,
+        chemical_name,
+        units,
     )
 
 

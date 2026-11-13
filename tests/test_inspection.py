@@ -23,6 +23,19 @@ def test_load_network_bad_path():
         inspection.load_network("/nonexistent/path/bad.inp")
 
 
+def test_failed_replacement_keeps_existing_session(net1, monkeypatch):
+    original = registry.require(net1)
+
+    def fail_to_load(*args, **kwargs):
+        raise RuntimeError("load failed")
+
+    monkeypatch.setattr(inspection, "epanet", fail_to_load)
+    with pytest.raises(RuntimeError, match="load failed"):
+        inspection.load_network("Net1.inp", network_id=net1)
+
+    assert registry.require(net1) is original
+
+
 def test_unload_network(net1):
     result = inspection.unload_network(net1)
     assert result["unloaded"] is True
