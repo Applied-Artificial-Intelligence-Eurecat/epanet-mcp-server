@@ -17,12 +17,16 @@ natural language.
 
 ## Features
 
-| Category | Tools |
-|---|---|
-| **Load & Inspect** | `load_network`, `unload_network`, `list_networks`, `list_bundled_networks`, `get_network_summary`, `get_nodes`, `get_links`, `get_patterns`, `get_controls`, `get_curves`, `get_options` |
-| **Simulate** | `run_hydraulic_simulation`, `run_quality_simulation`, `run_full_simulation`, `get_pressure_at_time`, `get_flow_at_time` |
-| **Modify** | `set_node_base_demand`, `set_pattern`, `add_pattern`, `set_pipe_diameter`, `set_pipe_roughness`, `set_pipe_status`, `set_pipe_length`, `set_pump_status`, `set_pump_speed`, `set_pump_head_curve`, `set_valve_setting`, `set_valve_status`, `set_tank_parameters`, `set_reservoir_head`, `set_simulation_duration`, `set_hydraulic_timestep`, `set_pattern_timestep`, `set_quality_timestep`, `set_quality_type`, `add_control`, `delete_control`, `save_network` |
-| **Scenarios** | `create_demand_perturbation`, `create_leakage_event`, `create_contamination_event`, `create_pressure_change_scenario`, `create_pump_control_scenario`, `create_valve_control_scenario`, `create_multi_failure_scenario` |
+| Tool Group                   | Tools                                                                                                                                                                                                                   | Description                                                                                                                                               |
+|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Network Management**       | `load_network`, `unload_network`, `list_networks`, `list_bundled_networks`, `save_network`                                                                                                                              | Manage the lifecycle of EPANET network models, including loading, unloading, discovering available networks, and saving changes to disk.                  |
+| **Network Inspection**       | `get_network_summary`, `get_nodes`, `get_links`, `get_patterns`, `get_controls`, `get_curves`, `get_options`                                                                                                            | Retrieve network topology, components, properties, controls, patterns, curves, and simulation settings without modifying the model.                       |
+| **Simulation**               | `run_hydraulic_simulation`, `run_quality_simulation`, `run_full_simulation`, `get_pressure_at_time`, `get_flow_at_time`                                                                                                 | Execute hydraulic and water-quality simulations and retrieve simulation results such as pressure and flow at specific times.                              |
+| **Node Modification**        | `set_node_base_demand`, `set_tank_parameters`, `set_reservoir_head`                                                                                                                                                     | Modify node-level properties, including junction demands, tank parameters, and reservoir hydraulic heads.                                                 |
+| **Link Modification**        | `set_pipe_diameter`, `set_pipe_roughness`, `set_pipe_status`, `set_pipe_length`, `set_pump_status`, `set_pump_speed`, `set_pump_head_curve`, `set_valve_setting`, `set_valve_status`                                    | Modify pipe, pump, and valve characteristics, including dimensions, operational status, speed, and control settings.                                      |
+| **Patterns & Controls**      | `set_pattern`, `add_pattern`, `add_control`, `delete_control`                                                                                                                                                           | Manage time-dependent patterns and operational controls governing network behavior.                                                                       |
+| **Simulation Configuration** | `set_simulation_duration`, `set_hydraulic_timestep`, `set_pattern_timestep`, `set_quality_timestep`, `set_quality_type`                                                                                                 | Configure simulation duration, time steps, and water-quality analysis options.                                                                            |
+| **Scenario Management**      | `create_demand_perturbation`, `create_leakage_event`, `create_contamination_event`, `create_pressure_change_scenario`, `create_pump_control_scenario`, `create_valve_control_scenario`, `create_multi_failure_scenario` | Generate what-if scenarios involving demand changes, leaks, contamination, pressure changes, operational adjustments, and multiple simultaneous failures. |
 
 ---
 
@@ -89,7 +93,10 @@ If not on `PATH`:
   "mcpServers": {
     "epanet": {
       "command": "python",
-      "args": ["-m", "epanet_mcp.server"],
+      "args": [
+        "-m",
+        "epanet_mcp.server"
+      ],
       "cwd": "/path/to/epanet-mcp-server/src"
     }
   }
@@ -199,7 +206,7 @@ pytest tests/ -v
 ## Bundled networks
 
 ePyT ships with many standard benchmark networks including Net1, Net2, L-TOWN,
-Hanoi, Anytown, Balerma and others.  Use `list_bundled_networks` to discover
+Hanoi, Anytown, Balerma and others. Use `list_bundled_networks` to discover
 them all.
 
 ---
