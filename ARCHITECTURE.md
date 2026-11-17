@@ -253,8 +253,14 @@ PyPI, and then publishes the MCP Registry entry.
 
 ### 5.1 Prepare the version
 
-Use the version without a `v` in package metadata, for example `1.0.0`. Use the
-`v` prefix only for the Git tag and GitHub Release, for example `v1.0.0`.
+Set the release version once and reuse it throughout the release procedure:
+
+```bash
+VERSION=1.0.1
+```
+
+Use `$VERSION` without a `v` prefix in package metadata, and use `v$VERSION`
+for the Git tag and GitHub Release.
 
 Update and synchronize:
 
@@ -293,9 +299,9 @@ Do not publish a GitHub Release from an unmerged feature commit.
 Create the release from `main`:
 
 ```bash
-gh release create v1.0.0 \
+gh release create "v$VERSION" \
   --target main \
-  --title "v1.0.0" \
+  --title "v$VERSION" \
   --generate-notes
 ```
 
