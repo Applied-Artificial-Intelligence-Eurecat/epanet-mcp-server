@@ -13,6 +13,8 @@ Any MCP-compatible LLM can load water network models, run
 simulations, modify parameters, and generate complex what-if scenarios through
 natural language.
 
+This project is mainly developed and maintained by EURECAT.
+
 ---
 
 ## Features
@@ -75,6 +77,22 @@ epanet-mcp-server --transport sse --port 8000
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json`
 (macOS) or the equivalent on your platform:
 
+
+
+```json
+{
+  "mcpServers": {
+    "epanet": {
+      "command": "uvx",
+      "args": ["epanet-mcp-server"]
+    }
+  }
+}
+```
+
+or
+
+
 ```json
 {
   "mcpServers": {
@@ -108,6 +126,19 @@ If not on `PATH`:
 ## Claude Code (`.mcp.json`)
 
 Place this in the root of your project or `~/.claude/`:
+
+```json
+{
+  "mcpServers": {
+    "epanet": {
+      "command": "uvx",
+      "args": ["epanet-mcp-server"]
+    }
+  }
+}
+```
+
+or
 
 ```json
 {
@@ -208,6 +239,30 @@ pytest tests/ -v
 ePyT ships with many standard benchmark networks including Net1, Net2, L-TOWN,
 Hanoi, Anytown, Balerma and others. Use `list_bundled_networks` to discover
 them all.
+
+---
+
+## Contributing
+
+Contributions are welcome, including bug reports, feature ideas, documentation,
+and code. To get started:
+
+1. Check the [open issues](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/issues)
+   or open a new one to discuss your proposed change.
+2. For code changes, fork the repository and create a branch from `main`.
+3. Run `python -m pytest tests/ -v`, then open a pull request against `main`
+   that links the issue and explains your change.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contribution and review
+guidelines.
+
+---
+
+## Contact
+
+```
+oriol.alas@eurecat.org
+```
 
 ---
 

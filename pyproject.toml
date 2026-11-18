@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "epanet-mcp-server"
 version = "1.0.1"
-description = "MCP server for EPANET water distribution network simulation via ePyT"
+description = "MCP server for EPANET water distribution network simulation via ePyT. Developed and maintained by Eurecat"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -28,7 +28,9 @@ dev = [
 examples = [
     "langchain>=1.5.0",
     "langchain-mcp-adapters>=0.3.2",
-    "langchain-openai>=1.8.0"
+    "langchain-openai>=1.8.0",
+    "tqdm",
+    "Jinja2"
 ]
 
 [project.scripts]
