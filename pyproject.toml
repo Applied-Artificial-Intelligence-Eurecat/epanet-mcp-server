@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "epanet-mcp-server"
-version = "1.0.1"
+version = "1.0.2"
 description = "MCP server for EPANET water distribution network simulation via ePyT. Developed and maintained by Eurecat"
 readme = "README.md"
 requires-python = ">=3.11"

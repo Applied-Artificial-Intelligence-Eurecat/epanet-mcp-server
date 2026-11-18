@@ -256,7 +256,7 @@ PyPI, and then publishes the MCP Registry entry.
 Set the release version once and reuse it throughout the release procedure:
 
 ```bash
-VERSION=1.0.1
+VERSION=1.0.2
 ```
 
 Use `$VERSION` without a `v` prefix in package metadata, and use `v$VERSION`
