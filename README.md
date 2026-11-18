@@ -1,13 +1,14 @@
 # EPANET MCP Server
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/blob/main/LICENSE)
 [![Linter](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/linter.yml/badge.svg?branch=main)](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/linter.yml)
 [![Pytest](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server/actions/workflows/test.yml)
 [![PyPI version](https://img.shields.io/pypi/v/epanet-mcp-server.svg?label=PyPI)](https://pypi.org/project/epanet-mcp-server/)
+[![Total Downloads](https://img.shields.io/pepy/dt/epanet-mcp-server?label=total%20downloads)](https://pepy.tech/projects/epanet-mcp-server)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-listed-blue.svg)](https://registry.modelcontextprotocol.io/?q=io.github.Applied-Artificial-Intelligence-Eurecat%2Fepanet-mcp-server)
 
-A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that
-exposes EPANET water-distribution network modelling capabilities through
-[ePyT](https://github.com/KIOS-Research/EPyT) - the EPANET Python Toolkit.
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that exposes EPANET water-distribution network
+modelling capabilities through [ePyT](https://github.com/KIOS-Research/EPyT) - the EPANET Python Toolkit.
 
 Any MCP-compatible LLM can load water network models, run
 simulations, modify parameters, and generate complex what-if scenarios through
@@ -77,21 +78,20 @@ epanet-mcp-server --transport sse --port 8000
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json`
 (macOS) or the equivalent on your platform:
 
-
-
 ```json
 {
   "mcpServers": {
     "epanet": {
       "command": "uvx",
-      "args": ["epanet-mcp-server"]
+      "args": [
+        "epanet-mcp-server"
+      ]
     }
   }
 }
 ```
 
 or
-
 
 ```json
 {
@@ -132,7 +132,9 @@ Place this in the root of your project or `~/.claude/`:
   "mcpServers": {
     "epanet": {
       "command": "uvx",
-      "args": ["epanet-mcp-server"]
+      "args": [
+        "epanet-mcp-server"
+      ]
     }
   }
 }
@@ -258,10 +260,20 @@ guidelines.
 
 ---
 
-## Contact
+## Citation
 
 ```
-oriol.alas@eurecat.org
+@software{AlasCercos2026EPANETMCP,
+  author       = {Alàs Cercós, Oriol and Echeverria Rovira, Lluís},
+  email        = {oriol.alas@eurecat.org, lluis.echeverria@eurecat.org},
+  title        = {{EPANET-MCP}: A Model Context Protocol Server for
+                  Water Distribution Network Modeling and Simulation},
+  year         = {2026},
+  version      = {1.0.2},
+  organization = {Eurecat},
+  url          = {https://github.com/Applied-Artificial-Intelligence-Eurecat/epanet-mcp-server},
+  note         = {Open-source software, MIT License}
+}
 ```
 
 ---
