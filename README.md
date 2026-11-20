@@ -264,8 +264,8 @@ guidelines.
 
 ```
 @software{AlasCercos2026EPANETMCP,
-  author       = {Alàs Cercós, Oriol and Echeverria Rovira, Lluís},
-  email        = {oriol.alas@eurecat.org, lluis.echeverria@eurecat.org},
+  author       = {Alàs, Oriol and Echeverria, Lluís and Palacín, Ian and Viñes, Oriol},
+  email        = {oriol.alas@eurecat.org, lluis.echeverria@eurecat.org, ian.palacin@eurecat.org, oriol.vines.eurecat.org},
   title        = {{EPANET-MCP}: A Model Context Protocol Server for
                   Water Distribution Network Modeling and Simulation},
   year         = {2026},
